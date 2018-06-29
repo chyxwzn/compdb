@@ -56,7 +56,7 @@ flag_patterns = [
 flags_whitelist = re.compile("|".join(map("^{}$".format, flag_patterns)))
 
 # Used to only bundle filenames with applicable arguments
-filename_flags = ["-o", "-I", "-isystem", "-iquote", "-include", "-imacros", "-isysroot", "--sysroot"]
+pair_flags = ["-D", "-o", "-I", "-isystem", "-iquote", "-include", "-imacros", "-isysroot", "--sysroot"]
 invalid_include_regex = re.compile("(^.*out/.+_intermediates.*$)|(.+/proguard.flags$)")
 
 
@@ -138,7 +138,7 @@ def parse_build_log(build_log, proj_dir, extra_flags, verbose):
             word = unescape(word)
 
             # include arguments for this option, if there are any, as a tuple
-            if(i != len(words) - 1 and word in filename_flags and words[i + 1][0] != '-'):
+            if(i != len(words) - 1 and word in pair_flags and words[i + 1][0] != '-'):
                 w = words[i + 1]
                 if not invalid_include_regex.match(w):
                     arguments.extend([word, w])
