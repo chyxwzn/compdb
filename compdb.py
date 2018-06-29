@@ -1,4 +1,5 @@
-#
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #   compiledb-generator: Tool for generating LLVM Compilation Database
 #   files for make-based build systems.
 #
