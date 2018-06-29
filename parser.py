@@ -34,8 +34,8 @@ cpp_compile_regex = re.compile("(.*-?[gc]\+\+ )|(.*-?clang\+\+ )")
 file_regex = re.compile("(^.+\.c$)|(^.+\.cc$)|(^.+\.cpp$)|(^.+\.cxx$)")
 
 # Leverage make --print-directory option
-make_enter_dir = re.compile("^\s*make\[\d+\]: Entering directory [`\'\"](?P<dir>.*)[`\'\"]\s*$")
-make_leave_dir = re.compile("^\s*make\[\d+\]: Leaving directory .*$")
+make_enter_dir = re.compile("^\s*make.*: Entering directory [`\'\"](?P<dir>.*)[`\'\"]\s*$")
+make_leave_dir = re.compile("^\s*make.*: Leaving directory .*$")
 
 # Flags we want:
 # -includes (-i, -I)
