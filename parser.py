@@ -84,6 +84,7 @@ def parse_build_log(build_log, proj_dir, extra_flags, verbose):
 
     compiler = None
     dir_stack = [proj_dir]
+    saved_files = []
     working_dir = proj_dir
     lineno = 0
 
@@ -124,7 +125,8 @@ def parse_build_log(build_log, proj_dir, extra_flags, verbose):
         # for this entry
         arguments = [compiler]
         for extra in extra_flags:
-            arguments.append(extra)
+            if extra:
+                arguments.append(extra)
         words = split_cmd_line(line)[1:]
         filepath = None
 
@@ -151,10 +153,11 @@ def parse_build_log(build_log, proj_dir, extra_flags, verbose):
                 else:
                     arguments.append(word)
 
-        if not filepath:
+        if not filepath or filepath in saved_files:
             result.skipped += 1
             continue
         result.count += 1
+        saved_files.append(filepath)
 
         # add entry to database
         # TODO performance: serialize to json file here?
