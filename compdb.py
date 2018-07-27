@@ -38,6 +38,24 @@ def generate_json_compdb(instream, proj_dir, extra_flags, verbose=False):
     result = parse_build_log(instream, os.path.abspath(proj_dir), extra_flags, verbose)
     return result
 
+def append_json_compdb(compdb, append_stream, outstream, verbose=False,
+                      force=False, pretty_output=True):
+    print("## Appending compilation database with {} entries to {}".format(
+        len(compdb), outstream.name))
+
+    orig = json.load(append_stream)
+    db_by_name = dict((d["file"], dict(d, index=index)) for (index, d) in enumerate(orig))
+    new_idxs = []
+    for (i, ele) in enumerate(compdb):
+        d = db_by_name.get(ele["file"])
+        if d:
+            orig[d["index"]] = ele
+        else:
+            new_idxs.append(i)
+    for idx in new_idxs:
+        orig.append(compdb[idx])
+    json.dump(orig, outstream, indent=pretty_output)
+    outstream.write(os.linesep)
 
 def write_json_compdb(compdb, outstream, verbose=False,
                       force=False, pretty_output=True):
@@ -61,6 +79,9 @@ class Options(object):
 @click.option('-p', '--parse', 'infile', type=click.File('r'),
               help='Build log file to parse compilation commands from.' +
               '(Default: stdin)', required=False, default=sys.stdin)
+@click.option('-a', '--append', 'append_file', type=click.File('r'),
+              help='append file to (Default: stdin)',
+              required=False, default=sys.stdin)
 @click.option('-o', '--output', 'outfile', type=click.File('w'),
               help="Output file path (Default: std output)",
               required=False, default='compile_commands.json')
@@ -71,14 +92,17 @@ class Options(object):
 @click.option('-v', '--verbose', is_flag=True, default=False,
               help='Print verbose messages.')
 @click.pass_context
-def compdb(ctx, infile, outfile, build_dir, extra_flags, verbose):
+def compdb(ctx, infile, append_file, outfile, build_dir, extra_flags, verbose):
     """Clang's Compilation Database generator for make-based build systems.
        When no subcommand is used it will parse build log/commands and generates
        its corresponding Compilation database."""
     assert not sys.platform.startswith("win32")
     try:
         r = generate_json_compdb(infile, build_dir, extra_flags.split(','), verbose=verbose)
-        write_json_compdb(r.compdb, outfile, verbose=verbose)
+        if append_file is not sys.stdin:
+            append_json_compdb(r.compdb, append_file, outfile, verbose=verbose)
+        else:
+            write_json_compdb(r.compdb, outfile, verbose=verbose)
         print("## Done.")
         sys.exit(0)
     except Error as e:
